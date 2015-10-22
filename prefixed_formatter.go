@@ -9,15 +9,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-)
-
-const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 34
-	gray    = 37
+	"github.com/mgutz/ansi"
 )
 
 var (
@@ -77,7 +69,7 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
-		timestampFormat = logrus.DefaultTimestampFormat
+		timestampFormat = time.Stamp
 	}
 	if isColored {
 		f.printColored(b, entry, keys, timestampFormat)
@@ -98,29 +90,37 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
-	var levelColor int
+func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys []string, timestampFormat string) {
+	var levelColor string
 	switch entry.Level {
-	case DebugLevel:
-		levelColor = gray
-	case WarnLevel:
-		levelColor = yellow
-	case ErrorLevel, FatalLevel, PanicLevel:
-		levelColor = red
+	case logrus.InfoLevel:
+		levelColor = ansi.Green
+	case logrus.WarnLevel:
+		levelColor = ansi.Magenta
+	case logrus.ErrorLevel:
+		levelColor = ansi.Red
+	case logrus.FatalLevel, logrus.PanicLevel:
+		levelColor = ansi.LightRed
 	default:
-		levelColor = blue
+		levelColor = ansi.LightBlue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(entry.Level.String())
+	prefix := ""
+
+	prefixValue, ok := entry.Data["prefix"]
+	if ok {
+		prefix = fmt.Sprint(" ", ansi.LightWhite, prefixValue, ":", ansi.Reset)
+	}
 
 	if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
+		fmt.Fprintf(b, "%s%04d%s %s%+5s%s%s %s", ansi.LightBlack, miniTS(), ansi.Reset, levelColor, levelText, ansi.Reset, prefix, entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		fmt.Fprintf(b, "%s%s%s %s%+5s%s%s %s", ansi.LightBlack, entry.Time.Format(timestampFormat), ansi.Reset, levelColor, levelText, ansi.Reset, prefix, entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
-		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, k, v)
+		fmt.Fprintf(b, " %s%s%s=%+v", levelColor, k, ansi.Reset, v)
 	}
 }
 
@@ -137,7 +137,6 @@ func needsQuoting(text string) bool {
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
-
 	b.WriteString(key)
 	b.WriteByte('=')
 
@@ -160,4 +159,19 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 	}
 
 	b.WriteByte(' ')
+}
+
+func prefixFieldClashes(data logrus.Fields) {
+	_, ok := data["time"]
+	if ok {
+		data["fields.time"] = data["time"]
+	}
+	_, ok = data["msg"]
+	if ok {
+		data["fields.msg"] = data["msg"]
+	}
+	_, ok = data["level"]
+	if ok {
+		data["fields.level"] = data["level"]
+	}
 }
