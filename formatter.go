@@ -1,4 +1,4 @@
-package prefixedlog
+package prefixed
 
 import (
 	"bytes"
@@ -11,6 +11,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/mgutz/ansi"
 )
+
+const reset = ansi.Reset
 
 var (
 	baseTimestamp time.Time
@@ -37,9 +39,8 @@ type TextFormatter struct {
 	// system that already adds timestamps.
 	DisableTimestamp bool
 
-	// Enable logging the full timestamp when a TTY is attached instead of just
-	// the time passed since beginning of execution.
-	FullTimestamp bool
+	// Enable logging of just the time passed since beginning of execution.
+	ShortTimestamp bool
 
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
@@ -53,7 +54,9 @@ type TextFormatter struct {
 func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	var keys []string = make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
-		keys = append(keys, k)
+		if k != "prefix" {
+			keys = append(keys, k)
+		}
 	}
 
 	if !f.DisableSorting {
@@ -92,44 +95,47 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys []string, timestampFormat string) {
 	var levelColor string
+	var levelText string
 	switch entry.Level {
 	case logrus.InfoLevel:
 		levelColor = ansi.Green
 	case logrus.WarnLevel:
-		levelColor = ansi.Magenta
-	case logrus.ErrorLevel:
+		levelColor = ansi.Yellow
+	case logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
 		levelColor = ansi.Red
-	case logrus.FatalLevel, logrus.PanicLevel:
-		levelColor = ansi.LightRed
 	default:
-		levelColor = ansi.LightBlue
+		levelColor = ansi.Blue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())
-	prefix := ""
+	if entry.Level != logrus.WarnLevel {
+		levelText = strings.ToUpper(entry.Level.String())
+	} else {
+		levelText = "WARN"
+	}
 
+	prefix := ""
 	prefixValue, ok := entry.Data["prefix"]
 	if ok {
-		prefix = fmt.Sprint(" ", ansi.LightWhite, prefixValue, ":", ansi.Reset)
+		prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
 	}
 
-	if !f.FullTimestamp {
-		fmt.Fprintf(b, "%s%04d%s %s%+5s%s%s %s", ansi.LightBlack, miniTS(), ansi.Reset, levelColor, levelText, ansi.Reset, prefix, entry.Message)
+	if f.ShortTimestamp {
+		fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s %s", ansi.LightBlack, miniTS(), reset, levelColor, levelText, reset, prefix, entry.Message)
 	} else {
-		fmt.Fprintf(b, "%s%s%s %s%+5s%s%s %s", ansi.LightBlack, entry.Time.Format(timestampFormat), ansi.Reset, levelColor, levelText, ansi.Reset, prefix, entry.Message)
+		fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s %s", ansi.LightBlack, entry.Time.Format(timestampFormat), reset, levelColor, levelText, reset, prefix, entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
-		fmt.Fprintf(b, " %s%s%s=%+v", levelColor, k, ansi.Reset, v)
+		fmt.Fprintf(b, " %s%s%s=%+v", levelColor, k, reset, v)
 	}
 }
 
 func needsQuoting(text string) bool {
 	for _, ch := range text {
 		if !((ch >= 'a' && ch <= 'z') ||
-		(ch >= 'A' && ch <= 'Z') ||
-		(ch >= '0' && ch <= '9') ||
-		ch == '-' || ch == '.') {
+			(ch >= 'A' && ch <= 'Z') ||
+			(ch >= '0' && ch <= '9') ||
+			ch == '-' || ch == '.') {
 			return false
 		}
 	}
