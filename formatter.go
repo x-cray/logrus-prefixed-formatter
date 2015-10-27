@@ -42,7 +42,7 @@ type TextFormatter struct {
 	// Enable logging of just the time passed since beginning of execution.
 	ShortTimestamp bool
 
-	// TimestampFormat to use for display when a full timestamp is printed
+	// Timestamp format to use for display when a full timestamp is printed.
 	TimestampFormat string
 
 	// The fields are sorted by default for a consistent output. For applications
