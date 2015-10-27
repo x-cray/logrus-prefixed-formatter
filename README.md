@@ -2,7 +2,7 @@
 [Logrus](https://github.com/Sirupsen/logrus) formatter mainly based on original `logrus.TextFormatter` but with slightly
 modified colored output and support for log entry prefixes, e.g. message source followed by a colon.
 
-![Formatter screenshot](http://cl.ly/image/3z0p2E3P1r3e/formatter-screenshot@2x.png)
+![Formatter screenshot](http://cl.ly/image/1w0B3F233F3z/formatter-screenshot@2x.png)
 
 Just like with the original `logrus.TextFormatter` when a TTY is not attached, the output is compatible with the
 [logfmt](http://godoc.org/github.com/kr/logfmt) format:
