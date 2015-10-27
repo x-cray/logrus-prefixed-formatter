@@ -17,6 +17,13 @@ time="Oct 27 00:44:26" level=fatal msg="The ice breaks!" number=100 omg=true
 exit status 1
 ```
 
+## Installation
+To install formatter, use `go get`:
+
+```sh
+$ go get github.com/x-cray/logrus-prefixed-formatter
+```
+
 ## Usage
 Here is how it should be used:
 
