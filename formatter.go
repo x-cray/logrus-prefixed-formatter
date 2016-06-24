@@ -3,6 +3,7 @@ package prefixed
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -114,15 +115,22 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	}
 
 	prefix := ""
-	prefixValue, ok := entry.Data["prefix"]
-	if ok {
+	message := entry.Message
+
+	if prefixValue, ok := entry.Data["prefix"]; ok {
 		prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
+	} else {
+		prefixValue, trimmedMsg := extractPrefix(entry.Message)
+		if len(prefixValue) > 0 {
+			prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
+			message = trimmedMsg
+		}
 	}
 
 	if f.ShortTimestamp {
-		fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s %s", ansi.LightBlack, miniTS(), reset, levelColor, levelText, reset, prefix, entry.Message)
+		fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s %s", ansi.LightBlack, miniTS(), reset, levelColor, levelText, reset, prefix, message)
 	} else {
-		fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s %s", ansi.LightBlack, entry.Time.Format(timestampFormat), reset, levelColor, levelText, reset, prefix, entry.Message)
+		fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s %s", ansi.LightBlack, entry.Time.Format(timestampFormat), reset, levelColor, levelText, reset, prefix, message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
@@ -140,6 +148,16 @@ func needsQuoting(text string) bool {
 		}
 	}
 	return true
+}
+
+func extractPrefix(msg string) (string, string) {
+	prefix := ""
+	regex := regexp.MustCompile("^\\[(.*?)\\]")
+	if regex.MatchString(msg) {
+		match := regex.FindString(msg)
+		prefix, msg = match[1:len(match)-1], strings.TrimSpace(msg[len(match):])
+	}
+	return prefix, msg
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
