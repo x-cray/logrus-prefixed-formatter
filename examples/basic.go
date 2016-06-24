@@ -16,37 +16,40 @@ func main() {
 	defer func() {
 		err := recover()
 		if err != nil {
+			// Fatal message
 			log.WithFields(logrus.Fields{
-				"prefix": "main",
 				"omg":    true,
 				"number": 100,
-			}).Fatal("The ice breaks!")
+			}).Fatal("[main] The ice breaks!")
 		}
 	}()
 
+	// You could either provide a map key called `prefix` to add prefix
 	log.WithFields(logrus.Fields{
 		"prefix": "main",
 		"animal": "walrus",
 		"number": 8,
 	}).Debug("Started observing beach")
 
+	// Or you can simply add prefix in square brackets within message itself
 	log.WithFields(logrus.Fields{
-		"prefix": "main",
 		"animal": "walrus",
 		"size":   10,
-	}).Info("A group of walrus emerges from the ocean")
+	}).Debug("[main] A group of walrus emerges from the ocean")
 
+	// Warning message
 	log.WithFields(logrus.Fields{
-		"prefix": "main",
 		"omg":    true,
 		"number": 122,
-	}).Warn("The group's number increased tremendously!")
+	}).Warn("[main] The group's number increased tremendously!")
 
+	// Information message
 	log.WithFields(logrus.Fields{
 		"prefix":      "sensor",
 		"temperature": -4,
-	}).Debug("Temperature changes")
+	}).Info("Temperature changes")
 
+	// Panic message
 	log.WithFields(logrus.Fields{
 		"prefix": "sensor",
 		"animal": "orca",
