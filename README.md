@@ -66,6 +66,8 @@ func main() {
 * `TimestampFormat string` — timestamp format to use for display when a full timestamp is printed.
 * `DisableSorting bool` — the fields are sorted by default for a consistent output. For applications
 that log extremely frequently and don't use the JSON formatter this may not be desired.
+* `SpacePadding int` - Pad msg field with spaces on the right for display. 
+The value for this parameter will be the size of padding. Its default value is zero, which means no padding will be applied.
 
 # License
 MIT
