@@ -8,7 +8,12 @@ import (
 var log = logrus.New()
 
 func init() {
-	log.Formatter = new(prefixed.TextFormatter)
+	formatter := new(prefixed.TextFormatter)
+	formatter.SetColorScheme(&prefixed.ColorScheme{
+		PrefixStyle: "blue+b",
+		TimestampStyle: "white+h",
+	})
+	log.Formatter = formatter
 	log.Level = logrus.DebugLevel
 }
 

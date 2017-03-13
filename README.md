@@ -1,6 +1,7 @@
 # Logrus Prefixed Log Formatter
 [Logrus](https://github.com/Sirupsen/logrus) formatter mainly based on original `logrus.TextFormatter` but with slightly
-modified colored output and support for log entry prefixes, e.g. message source followed by a colon.
+modified colored output and support for log entry prefixes, e.g. message source followed by a colon. In addition, custom
+color themes are supported.
 
 ![Formatter screenshot](http://cl.ly/image/1w0B3F233F3z/formatter-screenshot@2x.png)
 
@@ -62,10 +63,12 @@ func main() {
 * `ForceColors bool` — set to true to bypass checking for a TTY before outputting colors.
 * `DisableColors bool` — force disabling colors.
 * `DisableTimestamp bool` — disable timestamp logging. useful when output is redirected to logging system that already adds timestamps.
-* `ShortTimestamp bool` — enable logging of just the time passed since beginning of execution.
+* `FullTimestamp bool` — enable logging the full timestamp when a TTY is attached instead of just the time passed since beginning of execution.
 * `TimestampFormat string` — timestamp format to use for display when a full timestamp is printed.
 * `DisableSorting bool` — the fields are sorted by default for a consistent output. For applications that log extremely frequently and don't use the JSON formatter this may not be desired.
-* `SpacePadding int` — Pad msg field with spaces on the right for display. The value for this parameter will be the size of padding. Its default value is zero, which means no padding will be applied.
+* `QuoteEmptyFields bool` - wrap empty fields in quotes if true.
+* `QuoteCharacter string` - can be set to the override the default quoting character `"` with something else. For example: `'`, or `` ` ``.
+* `SpacePadding int` — pad msg field with spaces on the right for display. The value for this parameter will be the size of padding. Its default value is zero, which means no padding will be applied.
 
 # License
 MIT
