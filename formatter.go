@@ -31,6 +31,9 @@ type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
 
+	// Use formatted layout, but without colors for a non-TTY output
+	ForceFormatting bool
+
 	// Force disabling colors.
 	DisableColors bool
 
@@ -82,13 +85,14 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	})
 
 	isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
+	isFormatted := f.ForceFormatting || f.isTerminal
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
 		timestampFormat = time.Stamp
 	}
-	if isColored {
-		f.printColored(b, entry, keys, timestampFormat)
+	if isColored || isFormatted {
+		f.printFormatted(b, entry, keys, timestampFormat, isColored)
 	} else {
 		if !f.DisableTimestamp {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
@@ -106,18 +110,20 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys []string, timestampFormat string) {
+func (f *TextFormatter) printFormatted(b *bytes.Buffer, entry *logrus.Entry, keys []string, timestampFormat string, isColored bool) {
 	var levelColor string
 	var levelText string
-	switch entry.Level {
-	case logrus.InfoLevel:
-		levelColor = ansi.Green
-	case logrus.WarnLevel:
-		levelColor = ansi.Yellow
-	case logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
-		levelColor = ansi.Red
-	default:
-		levelColor = ansi.Blue
+	if isColored {
+		switch entry.Level {
+		case logrus.InfoLevel:
+			levelColor = ansi.Green
+		case logrus.WarnLevel:
+			levelColor = ansi.Yellow
+		case logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
+			levelColor = ansi.Red
+		default:
+			levelColor = ansi.Blue
+		}
 	}
 
 	if entry.Level != logrus.WarnLevel {
@@ -129,12 +135,14 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	prefix := ""
 	message := entry.Message
 
+	resetColor, prefixColor, tsColor := f.setupColors(isColored)
+
 	if prefixValue, ok := entry.Data["prefix"]; ok {
-		prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
+		prefix = fmt.Sprint(" ", prefixColor, prefixValue, ":", resetColor)
 	} else {
 		prefixValue, trimmedMsg := extractPrefix(entry.Message)
 		if len(prefixValue) > 0 {
-			prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
+			prefix = fmt.Sprint(" ", prefixColor, prefixValue, ":", resetColor)
 			message = trimmedMsg
 		}
 	}
@@ -145,17 +153,17 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	}
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "%s%s %s%+5s%s%s "+messageFormat, ansi.LightBlack, reset, levelColor, levelText, reset, prefix, message)
+		fmt.Fprintf(b, "%s%s %s%+5s%s%s "+messageFormat, tsColor, resetColor, levelColor, levelText, resetColor, prefix, message)
 	} else {
 		if f.ShortTimestamp {
-			fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s "+messageFormat, ansi.LightBlack, miniTS(), reset, levelColor, levelText, reset, prefix, message)
+			fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s "+messageFormat, tsColor, miniTS(), resetColor, levelColor, levelText, resetColor, prefix, message)
 		} else {
-			fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s "+messageFormat, ansi.LightBlack, entry.Time.Format(timestampFormat), reset, levelColor, levelText, reset, prefix, message)
+			fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s "+messageFormat, tsColor, entry.Time.Format(timestampFormat), resetColor, levelColor, levelText, resetColor, prefix, message)
 		}
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
-		fmt.Fprintf(b, " %s%s%s=%+v", levelColor, k, reset, v)
+		fmt.Fprintf(b, " %s%s%s=%+v", levelColor, k, resetColor, v)
 	}
 }
 
@@ -218,5 +226,17 @@ func prefixFieldClashes(data logrus.Fields) {
 	_, ok = data["level"]
 	if ok {
 		data["fields.level"] = data["level"]
+	}
+}
+
+func (f *TextFormatter) setupColors(isColored bool) (resetColor string, prefixColor string, tsColor string) {
+	if isColored {
+		resetColor = reset
+		prefixColor = ansi.Cyan
+		tsColor = ansi.LightBlack
+		return
+	} else {
+		// leave as empty strings to "disable" coloring
+		return
 	}
 }
