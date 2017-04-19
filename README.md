@@ -63,7 +63,8 @@ func main() {
 ### Fields
 
 * `ForceColors bool` — set to true to bypass checking for a TTY before outputting colors.
-* `DisableColors bool` — force disabling colors.
+* `DisableColors bool` — force disabling colors. For a TTY colors are enabled by default.
+* `ForceFormatting bool` — force formatted layout, even for non-TTY output.
 * `DisableTimestamp bool` — disable timestamp logging. Useful when output is redirected to logging system that already adds timestamps.
 * `FullTimestamp bool` — enable logging the full timestamp when a TTY is attached instead of just the time passed since beginning of execution.
 * `TimestampFormat string` — timestamp format to use for display when a full timestamp is printed.
@@ -74,9 +75,9 @@ func main() {
 
 ### Methods
 
-#### `SetColorScheme(colorScheme *ColorScheme)`
+#### `SetColorScheme(colorScheme *prefixed.ColorScheme)`
 
-Sets an alternative color scheme for colored output. `ColorScheme` struct supports the following fields:
+Sets an alternative color scheme for colored output. `prefixed.ColorScheme` struct supports the following fields:
 * `InfoLevelStyle string` — info level style.
 * `WarnLevelStyle string` — warn level style.
 * `ErrorLevelStyle string` — error style.
