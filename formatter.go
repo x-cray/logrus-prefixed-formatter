@@ -25,6 +25,16 @@ var (
 		PrefixStyle: "cyan",
 		TimestampStyle: "black+h",
 	}
+	noColorsColorScheme *compiledColorScheme = &compiledColorScheme{
+		InfoLevelColor: ansi.ColorFunc(""),
+		WarnLevelColor: ansi.ColorFunc(""),
+		ErrorLevelColor: ansi.ColorFunc(""),
+		FatalLevelColor: ansi.ColorFunc(""),
+		PanicLevelColor: ansi.ColorFunc(""),
+		DebugLevelColor: ansi.ColorFunc(""),
+		PrefixColor: ansi.ColorFunc(""),
+		TimestampColor: ansi.ColorFunc(""),
+	}
 	defaultCompiledColorScheme *compiledColorScheme = compileColorScheme(defaultColorScheme)
 )
 
@@ -58,8 +68,11 @@ type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
 
-	// Force disabling colors.
+	// Force disabling colors. For a TTY colors are enabled by default.
 	DisableColors bool
+
+	// Force formatted layout, even for non-TTY output.
+	ForceFormatting bool
 
 	// Disable timestamp logging. useful when output is redirected to logging
 	// system that already adds timestamps.
@@ -154,14 +167,25 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	f.Do(func() { f.init(entry) })
 
-	isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
+	isFormatted := f.ForceFormatting || f.isTerminal
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
 		timestampFormat = logrus.DefaultTimestampFormat
 	}
-	if isColored {
-		f.printColored(b, entry, keys, timestampFormat)
+	if isFormatted {
+		isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
+		var colorScheme *compiledColorScheme
+		if (isColored) {
+			if (f.colorScheme == nil) {
+				colorScheme = defaultCompiledColorScheme
+			} else {
+				colorScheme = f.colorScheme
+			}
+		} else {
+			colorScheme = noColorsColorScheme
+		}
+		f.printColored(b, entry, keys, timestampFormat, colorScheme)
 	} else {
 		if !f.DisableTimestamp {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
@@ -179,15 +203,9 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys []string, timestampFormat string) {
+func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys []string, timestampFormat string, colorScheme *compiledColorScheme) {
 	var levelColor func(string) string
 	var levelText string
-	var colorScheme *compiledColorScheme
-	if (f.colorScheme == nil) {
-		colorScheme = defaultCompiledColorScheme
-	} else {
-		colorScheme = f.colorScheme
-	}
 	switch entry.Level {
 	case logrus.InfoLevel:
 		levelColor = colorScheme.InfoLevelColor
