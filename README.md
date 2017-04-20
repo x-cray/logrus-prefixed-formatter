@@ -1,4 +1,6 @@
 # Logrus Prefixed Log Formatter
+[![Build Status](https://travis-ci.org/x-cray/logrus-prefixed-formatter.svg?branch=master)](https://travis-ci.org/x-cray/logrus-prefixed-formatter.svg)
+
 [Logrus](https://github.com/Sirupsen/logrus) formatter mainly based on original `logrus.TextFormatter` but with slightly
 modified colored output and support for log entry prefixes, e.g. message source followed by a colon. In addition, custom
 color themes are supported.
