@@ -188,14 +188,14 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat, colorScheme)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat), true)
 		}
-		f.appendKeyValue(b, "level", entry.Level.String())
-		if entry.Message != "" {
-			f.appendKeyValue(b, "msg", entry.Message)
-		}
+		f.appendKeyValue(b, "level", entry.Level.String(), true)
 		for _, key := range keys {
-			f.appendKeyValue(b, key, entry.Data[key])
+			f.appendKeyValue(b, key, entry.Data[key], true)
+		}
+		if entry.Message != "" {
+			f.appendKeyValue(b, "msg", entry.Message, false)
 		}
 	}
 
@@ -232,11 +232,11 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	message := entry.Message
 
 	if prefixValue, ok := entry.Data["prefix"]; ok {
-		prefix = colorScheme.PrefixColor(prefixValue.(string) + ":")
+		prefix = colorScheme.PrefixColor(" " + prefixValue.(string) + ":")
 	} else {
 		prefixValue, trimmedMsg := extractPrefix(entry.Message)
 		if len(prefixValue) > 0 {
-			prefix = colorScheme.PrefixColor(prefixValue + ":")
+			prefix = colorScheme.PrefixColor(" " + prefixValue + ":")
 			message = trimmedMsg
 		}
 	}
@@ -247,7 +247,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	}
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "%s %s "+messageFormat, level, prefix, message)
+		fmt.Fprintf(b, "%s%s "+messageFormat, level, prefix, message)
 	} else {
 		var timestamp string
 		if !f.FullTimestamp {
@@ -255,7 +255,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 		} else {
 			timestamp = fmt.Sprintf("[%s]", entry.Time.Format(timestampFormat))
 		}
-		fmt.Fprintf(b, "%s %s %s "+messageFormat, colorScheme.TimestampColor(timestamp), level, prefix, message)
+		fmt.Fprintf(b, "%s %s%s "+messageFormat, colorScheme.TimestampColor(timestamp), level, prefix, message)
 	}
 	for _, k := range keys {
 		if k != "prefix" {
@@ -290,11 +290,14 @@ func extractPrefix(msg string) (string, string) {
 	return prefix, msg
 }
 
-func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
+func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}, appendSpace bool) {
 	b.WriteString(key)
 	b.WriteByte('=')
 	f.appendValue(b, value)
-	b.WriteByte(' ')
+
+	if appendSpace {
+		b.WriteByte(' ')
+	}
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {

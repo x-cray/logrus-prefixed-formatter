@@ -9,23 +9,19 @@ var log = logrus.New()
 
 func init() {
 	formatter := new(prefixed.TextFormatter)
+	formatter.FullTimestamp = true
+
+	// Set specific colors for prefix and timestamp
+	formatter.SetColorScheme(&prefixed.ColorScheme{
+		PrefixStyle:    "blue+b",
+		TimestampStyle: "white+h",
+	})
+
 	log.Formatter = formatter
 	log.Level = logrus.DebugLevel
 }
 
 func main() {
-	defer func() {
-		err := recover()
-		if err != nil {
-			// Fatal message
-			log.WithFields(logrus.Fields{
-				"omg":    true,
-				"number": 100,
-			}).Fatal("[main] The ice breaks!")
-		}
-	}()
-
-	// You could either provide a map key called `prefix` to add prefix
 	log.WithFields(logrus.Fields{
 		"prefix": "main",
 		"animal": "walrus",
@@ -49,11 +45,4 @@ func main() {
 		"prefix":      "sensor",
 		"temperature": -4,
 	}).Info("Temperature changes")
-
-	// Panic message
-	log.WithFields(logrus.Fields{
-		"prefix": "sensor",
-		"animal": "orca",
-		"size":   9009,
-	}).Panic("It's over 9000!")
 }
