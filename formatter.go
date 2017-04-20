@@ -14,26 +14,26 @@ import (
 )
 
 var (
-	baseTimestamp time.Time = time.Now()
+	baseTimestamp      time.Time    = time.Now()
 	defaultColorScheme *ColorScheme = &ColorScheme{
-		InfoLevelStyle: "green",
-		WarnLevelStyle: "yellow",
+		InfoLevelStyle:  "green",
+		WarnLevelStyle:  "yellow",
 		ErrorLevelStyle: "red",
 		FatalLevelStyle: "red",
 		PanicLevelStyle: "red",
 		DebugLevelStyle: "blue",
-		PrefixStyle: "cyan",
-		TimestampStyle: "black+h",
+		PrefixStyle:     "cyan",
+		TimestampStyle:  "black+h",
 	}
 	noColorsColorScheme *compiledColorScheme = &compiledColorScheme{
-		InfoLevelColor: ansi.ColorFunc(""),
-		WarnLevelColor: ansi.ColorFunc(""),
+		InfoLevelColor:  ansi.ColorFunc(""),
+		WarnLevelColor:  ansi.ColorFunc(""),
 		ErrorLevelColor: ansi.ColorFunc(""),
 		FatalLevelColor: ansi.ColorFunc(""),
 		PanicLevelColor: ansi.ColorFunc(""),
 		DebugLevelColor: ansi.ColorFunc(""),
-		PrefixColor: ansi.ColorFunc(""),
-		TimestampColor: ansi.ColorFunc(""),
+		PrefixColor:     ansi.ColorFunc(""),
+		TimestampColor:  ansi.ColorFunc(""),
 	}
 	defaultCompiledColorScheme *compiledColorScheme = compileColorScheme(defaultColorScheme)
 )
@@ -43,25 +43,25 @@ func miniTS() int {
 }
 
 type ColorScheme struct {
-	InfoLevelStyle string
-	WarnLevelStyle string
+	InfoLevelStyle  string
+	WarnLevelStyle  string
 	ErrorLevelStyle string
 	FatalLevelStyle string
 	PanicLevelStyle string
 	DebugLevelStyle string
-	PrefixStyle string
-	TimestampStyle string
+	PrefixStyle     string
+	TimestampStyle  string
 }
 
 type compiledColorScheme struct {
-	InfoLevelColor func(string) string
-	WarnLevelColor func(string) string
+	InfoLevelColor  func(string) string
+	WarnLevelColor  func(string) string
 	ErrorLevelColor func(string) string
 	FatalLevelColor func(string) string
 	PanicLevelColor func(string) string
 	DebugLevelColor func(string) string
-	PrefixColor func(string) string
-	TimestampColor func(string) string
+	PrefixColor     func(string) string
+	TimestampColor  func(string) string
 }
 
 type TextFormatter struct {
@@ -111,9 +111,9 @@ type TextFormatter struct {
 	sync.Once
 }
 
-func getCompiledColor(main string, fallback string) func (string) string {
+func getCompiledColor(main string, fallback string) func(string) string {
 	var style string
-	if (main != "") {
+	if main != "" {
 		style = main
 	} else {
 		style = fallback
@@ -123,14 +123,14 @@ func getCompiledColor(main string, fallback string) func (string) string {
 
 func compileColorScheme(s *ColorScheme) *compiledColorScheme {
 	return &compiledColorScheme{
-		InfoLevelColor: getCompiledColor(s.InfoLevelStyle, defaultColorScheme.InfoLevelStyle),
-		WarnLevelColor: getCompiledColor(s.WarnLevelStyle, defaultColorScheme.WarnLevelStyle),
+		InfoLevelColor:  getCompiledColor(s.InfoLevelStyle, defaultColorScheme.InfoLevelStyle),
+		WarnLevelColor:  getCompiledColor(s.WarnLevelStyle, defaultColorScheme.WarnLevelStyle),
 		ErrorLevelColor: getCompiledColor(s.ErrorLevelStyle, defaultColorScheme.ErrorLevelStyle),
 		FatalLevelColor: getCompiledColor(s.FatalLevelStyle, defaultColorScheme.FatalLevelStyle),
 		PanicLevelColor: getCompiledColor(s.PanicLevelStyle, defaultColorScheme.PanicLevelStyle),
 		DebugLevelColor: getCompiledColor(s.DebugLevelStyle, defaultColorScheme.DebugLevelStyle),
-		PrefixColor: getCompiledColor(s.PrefixStyle, defaultColorScheme.PrefixStyle),
-		TimestampColor: getCompiledColor(s.TimestampStyle, defaultColorScheme.TimestampStyle),
+		PrefixColor:     getCompiledColor(s.PrefixStyle, defaultColorScheme.PrefixStyle),
+		TimestampColor:  getCompiledColor(s.TimestampStyle, defaultColorScheme.TimestampStyle),
 	}
 }
 
@@ -176,8 +176,8 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	if isFormatted {
 		isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
 		var colorScheme *compiledColorScheme
-		if (isColored) {
-			if (f.colorScheme == nil) {
+		if isColored {
+			if f.colorScheme == nil {
 				colorScheme = defaultCompiledColorScheme
 			} else {
 				colorScheme = f.colorScheme
@@ -232,11 +232,11 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	message := entry.Message
 
 	if prefixValue, ok := entry.Data["prefix"]; ok {
-		prefix = colorScheme.PrefixColor(prefixValue.(string)+":")
+		prefix = colorScheme.PrefixColor(prefixValue.(string) + ":")
 	} else {
 		prefixValue, trimmedMsg := extractPrefix(entry.Message)
 		if len(prefixValue) > 0 {
-			prefix = colorScheme.PrefixColor(prefixValue+":")
+			prefix = colorScheme.PrefixColor(prefixValue + ":")
 			message = trimmedMsg
 		}
 	}
@@ -258,7 +258,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 		fmt.Fprintf(b, "%s %s %s "+messageFormat, colorScheme.TimestampColor(timestamp), level, prefix, message)
 	}
 	for _, k := range keys {
-		if (k != "prefix") {
+		if k != "prefix" {
 			v := entry.Data[k]
 			fmt.Fprintf(b, " %s=%+v", levelColor(k), v)
 		}
