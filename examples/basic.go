@@ -10,7 +10,7 @@ var log = logrus.New()
 func init() {
 	formatter := new(prefixed.TextFormatter)
 	formatter.SetColorScheme(&prefixed.ColorScheme{
-		PrefixStyle: "blue+b",
+		PrefixStyle:    "blue+b",
 		TimestampStyle: "white+h",
 	})
 	log.Formatter = formatter
