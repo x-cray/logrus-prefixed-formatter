@@ -90,14 +90,23 @@ Sets an alternative color scheme for colored output. `prefixed.ColorScheme` stru
 Color styles should be specified using [mgutz/ansi](https://github.com/mgutz/ansi#style-format) style syntax. For example, here is the default theme:
 
 ```go
-InfoLevelStyle: "green",
-WarnLevelStyle: "yellow",
+InfoLevelStyle:  "green",
+WarnLevelStyle:  "yellow",
 ErrorLevelStyle: "red",
 FatalLevelStyle: "red",
 PanicLevelStyle: "red",
 DebugLevelStyle: "blue",
-PrefixStyle: "cyan",
-TimestampStyle: "black+h"
+PrefixStyle:     "cyan",
+TimestampStyle:  "black+h"
+```
+
+It's not necessary to specify all colors when changing color scheme if you want to change just specific ones:
+
+```go
+formatter.SetColorScheme(&prefixed.ColorScheme{
+    PrefixStyle:    "blue+b",
+    TimestampStyle: "white+h",
+})
 ```
 
 # License
