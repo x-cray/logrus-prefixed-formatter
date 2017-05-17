@@ -78,6 +78,9 @@ type TextFormatter struct {
 	// system that already adds timestamps.
 	DisableTimestamp bool
 
+	// Disable the conversion of the log levels to uppercase
+	DisableUppercase bool
+
 	// Enable logging the full timestamp when a TTY is attached instead of just
 	// the time passed since beginning of execution.
 	FullTimestamp bool
@@ -222,9 +225,13 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	}
 
 	if entry.Level != logrus.WarnLevel {
-		levelText = strings.ToUpper(entry.Level.String())
+		levelText = entry.Level.String()
 	} else {
-		levelText = "WARN"
+		levelText = "warn"
+	}
+
+	if !f.DisableUppercase {
+		levelText = strings.ToUpper(levelText)
 	}
 
 	level := levelColor(fmt.Sprintf("%5s", levelText))

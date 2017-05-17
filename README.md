@@ -66,6 +66,7 @@ func main() {
 
 * `ForceColors bool` — set to true to bypass checking for a TTY before outputting colors.
 * `DisableColors bool` — force disabling colors. For a TTY colors are enabled by default.
+* `DisableUppercase bool` — set to true to turn off the conversion of the log level names to uppercase.
 * `ForceFormatting bool` — force formatted layout, even for non-TTY output.
 * `DisableTimestamp bool` — disable timestamp logging. Useful when output is redirected to logging system that already adds timestamps.
 * `FullTimestamp bool` — enable logging the full timestamp when a TTY is attached instead of just the time passed since beginning of execution.
