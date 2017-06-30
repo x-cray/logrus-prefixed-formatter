@@ -22,13 +22,21 @@ var _ = Describe("Formatter", func() {
 		log.Level = logrus.DebugLevel
 	})
 
-	Describe("Formatting output", func() {
-		It("should output simple logfmt message", func() {
+	Describe("logfmt output", func() {
+		It("should output simple message", func() {
 			formatter.DisableTimestamp = true
 			log.Debug("test")
 			Ω(output.GetValue()).Should(Equal("level=debug msg=test\n"))
 		})
 
+		It("should output message with additional field", func() {
+			formatter.DisableTimestamp = true
+			log.WithFields(logrus.Fields{ "animal": "walrus" }).Debug("test")
+			Ω(output.GetValue()).Should(Equal("level=debug msg=test animal=walrus\n"))
+		})
+	})
+
+	Describe("Formatted output", func() {
 		It("should output formatted message", func() {
 			formatter.DisableTimestamp = true
 			formatter.ForceFormatting = true

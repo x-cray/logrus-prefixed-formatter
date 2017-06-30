@@ -196,10 +196,10 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		}
 		f.appendKeyValue(b, "level", entry.Level.String(), true)
 		if entry.Message != "" {
-			f.appendKeyValue(b, "msg", entry.Message, true)
+			f.appendKeyValue(b, "msg", entry.Message, lastKeyIdx >= 0)
 		}
 		for i, key := range keys {
-			f.appendKeyValue(b, key, entry.Data[key], i != lastKeyIdx)
+			f.appendKeyValue(b, key, entry.Data[key], lastKeyIdx != i)
 		}
 	}
 
