@@ -3,9 +3,9 @@ package prefixed_test
 import (
 	. "github.com/x-cray/logrus-prefixed-formatter"
 
-	"github.com/sirupsen/logrus"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Formatter", func() {
@@ -31,7 +31,7 @@ var _ = Describe("Formatter", func() {
 
 		It("should output message with additional field", func() {
 			formatter.DisableTimestamp = true
-			log.WithFields(logrus.Fields{ "animal": "walrus" }).Debug("test")
+			log.WithFields(logrus.Fields{"animal": "walrus"}).Debug("test")
 			Ω(output.GetValue()).Should(Equal("level=debug msg=test animal=walrus\n"))
 		})
 	})
@@ -42,6 +42,15 @@ var _ = Describe("Formatter", func() {
 			formatter.ForceFormatting = true
 			log.Debug("test")
 			Ω(output.GetValue()).Should(Equal("DEBUG test\n"))
+		})
+	})
+
+	Describe("Formatted output with no message", func() {
+		It("should not have two consecutive spaces", func() {
+			formatter.DisableTimestamp = true
+			formatter.ForceFormatting = true
+			log.WithFields(logrus.Fields{"animal": "walrus"}).Debug()
+			Ω(output.GetValue()).Should(Equal("DEBUG animal=walrus\n"))
 		})
 	})
 
