@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	"github.com/mgutz/ansi"
 	"golang.org/x/crypto/ssh/terminal"
 )
