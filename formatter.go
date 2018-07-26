@@ -41,6 +41,7 @@ var (
 		TimestampColor:  ansi.ColorFunc(""),
 	}
 	defaultCompiledColorScheme *compiledColorScheme = compileColorScheme(defaultColorScheme)
+	extractPrefixRegex = regexp.MustCompile("^\\[(.*?)\\]")
 )
 
 func miniTS() int {
@@ -304,9 +305,8 @@ func (f *TextFormatter) needsQuoting(text string) bool {
 
 func extractPrefix(msg string) (string, string) {
 	prefix := ""
-	regex := regexp.MustCompile("^\\[(.*?)\\]")
-	if regex.MatchString(msg) {
-		match := regex.FindString(msg)
+	if extractPrefixRegex.MatchString(msg) {
+		match := extractPrefixRegex.FindString(msg)
 		prefix, msg = match[1:len(match)-1], strings.TrimSpace(msg[len(match):])
 	}
 	return prefix, msg
