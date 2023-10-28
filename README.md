@@ -1,5 +1,5 @@
 # Logrus Prefixed Log Formatter
-[![Build Status](https://travis-ci.org/x-cray/logrus-prefixed-formatter.svg?branch=master)](https://travis-ci.org/x-cray/logrus-prefixed-formatter)
+[![Build Status](https://travis-ci.org/teo/logrus-prefixed-formatter.svg?branch=master)](https://travis-ci.org/teo/logrus-prefixed-formatter)
 
 [Logrus](https://github.com/sirupsen/logrus) formatter mainly based on original `logrus.TextFormatter` but with slightly
 modified colored output and support for log entry prefixes, e.g. message source followed by a colon. In addition, custom
@@ -24,7 +24,7 @@ exit status 1
 To install formatter, use `go get`:
 
 ```sh
-$ go get github.com/x-cray/logrus-prefixed-formatter
+$ go get github.com/teo/logrus-prefixed-formatter
 ```
 
 ## Usage
@@ -35,7 +35,7 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
+	prefixed "github.com/teo/logrus-prefixed-formatter"
 )
 
 var log = logrus.New()

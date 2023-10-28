@@ -7,7 +7,7 @@ deps:
 
 test-deps:
 	@which ginkgo 2>/dev/null ; if [ $$? -eq 1 ]; then \
-		go get -u -v github.com/onsi/ginkgo/ginkgo; \
+		go get -u -v github.com/onsi/ginkgo/v2/ginkgo@latest; \
 	fi
 
 test: test-deps

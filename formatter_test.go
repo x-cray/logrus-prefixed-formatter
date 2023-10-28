@@ -1,11 +1,11 @@
 package prefixed_test
 
 import (
-	. "github.com/x-cray/logrus-prefixed-formatter"
+	. "github.com/teo/logrus-prefixed-formatter"
 
-	"github.com/sirupsen/logrus"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Formatter", func() {
@@ -31,7 +31,7 @@ var _ = Describe("Formatter", func() {
 
 		It("should output message with additional field", func() {
 			formatter.DisableTimestamp = true
-			log.WithFields(logrus.Fields{ "animal": "walrus" }).Debug("test")
+			log.WithFields(logrus.Fields{"animal": "walrus"}).Debug("test")
 			Ω(output.GetValue()).Should(Equal("level=debug msg=test animal=walrus\n"))
 		})
 	})
