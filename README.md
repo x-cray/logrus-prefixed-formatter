@@ -75,6 +75,7 @@ func main() {
 * `QuoteEmptyFields bool` — wrap empty fields in quotes if true.
 * `QuoteCharacter string` — can be set to the override the default quoting character `"` with something else. For example: `'`, or `` ` ``.
 * `SpacePadding int` — pad msg field with spaces on the right for display. The value for this parameter will be the size of padding. Its default value is zero, which means no padding will be applied.
+* `PrefixFieldName string` - choose custom logrus field name for prefix detection
 
 ### Methods
 

@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/mgutz/ansi"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -41,6 +41,7 @@ var (
 		TimestampColor:  ansi.ColorFunc(""),
 	}
 	defaultCompiledColorScheme *compiledColorScheme = compileColorScheme(defaultColorScheme)
+	defaultPrefixFieldName                          = "prefix"
 )
 
 func miniTS() int {
@@ -109,6 +110,9 @@ type TextFormatter struct {
 	// The value for this parameter will be the size of padding.
 	// Its default value is zero, which means no padding will be applied for msg.
 	SpacePadding int
+
+	// The field name for the prefix detection if found in logrus.Entry.Data
+	PrefixFieldName string
 
 	// Color scheme to use.
 	colorScheme *compiledColorScheme
@@ -253,7 +257,12 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	prefix := ""
 	message := entry.Message
 
-	if prefixValue, ok := entry.Data["prefix"]; ok {
+	prefixFieldName := f.PrefixFieldName
+	if prefixFieldName == "" {
+		prefixFieldName = defaultPrefixFieldName
+	}
+
+	if prefixValue, ok := entry.Data[prefixFieldName]; ok {
 		prefix = colorScheme.PrefixColor(" " + prefixValue.(string) + ":")
 	} else {
 		prefixValue, trimmedMsg := extractPrefix(entry.Message)
@@ -280,7 +289,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 		fmt.Fprintf(b, "%s %s%s "+messageFormat, colorScheme.TimestampColor(timestamp), level, prefix, message)
 	}
 	for _, k := range keys {
-		if k != "prefix" {
+		if k != prefixFieldName {
 			v := entry.Data[k]
 			fmt.Fprintf(b, " %s=%+v", levelColor(k), v)
 		}
@@ -345,12 +354,12 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 // This is to not silently overwrite `time`, `msg` and `level` fields when
 // dumping it. If this code wasn't there doing:
 //
-//  logrus.WithField("level", 1).Info("hello")
+//	logrus.WithField("level", 1).Info("hello")
 //
 // would just silently drop the user provided level. Instead with this code
 // it'll be logged as:
 //
-//  {"level": "info", "fields.level": 1, "msg": "hello", "time": "..."}
+//	{"level": "info", "fields.level": 1, "msg": "hello", "time": "..."}
 func prefixFieldClashes(data logrus.Fields) {
 	if t, ok := data["time"]; ok {
 		data["fields.time"] = t

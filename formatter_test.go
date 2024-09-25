@@ -3,9 +3,9 @@ package prefixed_test
 import (
 	. "github.com/x-cray/logrus-prefixed-formatter"
 
-	"github.com/sirupsen/logrus"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Formatter", func() {
@@ -31,7 +31,7 @@ var _ = Describe("Formatter", func() {
 
 		It("should output message with additional field", func() {
 			formatter.DisableTimestamp = true
-			log.WithFields(logrus.Fields{ "animal": "walrus" }).Debug("test")
+			log.WithFields(logrus.Fields{"animal": "walrus"}).Debug("test")
 			Ω(output.GetValue()).Should(Equal("level=debug msg=test animal=walrus\n"))
 		})
 	})
@@ -47,5 +47,15 @@ var _ = Describe("Formatter", func() {
 
 	Describe("Theming support", func() {
 
+	})
+
+	Describe("Custom prefix", func() {
+		It("should detect custom prefix from log fields", func() {
+			formatter.DisableTimestamp = true
+			formatter.PrefixFieldName = "moduleName"
+			formatter.ForceFormatting = true
+			log.WithFields(logrus.Fields{"moduleName": "main"}).Debug("something happened")
+			Ω(output.GetValue()).Should(Equal("DEBUG main: something happened\n"))
+		})
 	})
 })
